@@ -1,0 +1,4 @@
+*.pyc
+
+# Ignore logs, checkpoints, videos etc
+experiments/
