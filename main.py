@@ -13,12 +13,13 @@ parser = argparse.ArgumentParser(description=(
                                  'If the name of the experiment already exists, the'
                                  'training will load from last checkpoint'))
 parser.add_argument('env_name', type=str, help='Gym environment name')
-parser.add_argument('num_steps', type=int, help='Number of training steps')
-parser.add_argument('stop_exploration', type=int,
-                    help='Steps before epsilon reaches minimum')
-parser.add_argument('target_update_step', type=int,
-                    help='Update target network every "n" steps')
 # Optional arguments
+parser.add_argument('num_steps', type=int, default=80000000,
+                    help='Number of training steps')
+parser.add_argument('stop_exploration', type=int, default=4000000,
+                    help='Steps before epsilon reaches minimum')
+parser.add_argument('target_update_step', type=int, default=40000,
+                    help='Update target network every "n" steps')
 parser.add_argument('--double_learning', type=str, choices=['Y', 'N'], default='N',
                     help='Wheter to use double Q-learning or not (default=N)')
 parser.add_argument('--learning_rate', type=float, default=3e-4,
