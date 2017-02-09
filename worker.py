@@ -69,8 +69,6 @@ class Worker:
                 env = AtariWrapper(self.env_name, self.videodir)
             else:
                 env = AtariWrapper(self.env_name)
-            # Configure the maximum number of steps
-            # env.spec.tags.update({'wrapper_config.TimeLimit.max_episode_steps': 1500})
 
         # Repeat until maximum steps limit is reached
         while not self.coord.should_stop():
@@ -130,6 +128,7 @@ class Worker:
                     self.summary_writer(states, actions, targets, ep_reward, local_step, global_step_value)
                     print('Saving model...')
                     self.saver.save(self.sess, self.savepath)
+                    print('Done!')
 
                 # If the maximum step is reached, request all threads to stop
                 if global_step_value >= self.num_steps:

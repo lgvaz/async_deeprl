@@ -32,11 +32,8 @@ parser.add_argument('--clip_grads', type=str, choices=['Y', 'N'], default='Y',
                     help='Whether the grads should be clipped or not (default=Y)')
 parser.add_argument('--discount_factor', type=float, default=0.99,
                     help='How much the agent should look into the future (default=0.99)')
-parser.add_argument('--final_epsilon', type=list, default=[0.1, 0.01, 0.5],
+parser.add_argument('--final_epsilon_list', type=list, default=[0.1, 0.01, 0.5],
                     help='List of minimum exploration rates (default=[0.1, 0.01, 0.5])')
-# TODO: This option is probably not relevant on atari envs, maybe remove it
-parser.add_argument('--number_steps_limit', type=int, default=1500,
-                    help='Number of maximum steps allowed per episode (default=1500)')
 args = parser.parse_args()
 
 # Ask experiment name
@@ -99,7 +96,7 @@ with tf.Session() as sess:
         num_workers=args.num_workers,
         num_steps=args.num_steps,
         stop_exploration=args.stop_exploration,
-        final_epsilon=args.final_epsilon,
+        final_epsilon_list=args.final_epsilon_list,
         discount_factor=args.discount_factor,
         online_update_step=args.online_update_step,
         target_update_step=args.target_update_step,

@@ -53,8 +53,8 @@ class QNet:
         actions_value = tf.gather(tf.reshape(self.outputs, [-1]), actions_ids)
         # Calculate mean squared error
         self.loss = tf.reduce_mean(tf.squared_difference(self.targets, actions_value))
-#        opt = tf.train.AdamOptimizer(learning_rate)
-        opt = tf.train.RMSPropOptimizer(learning_rate, 0.99, 0.0, 1e-6)
+        opt = tf.train.AdamOptimizer(learning_rate)
+#        opt = tf.train.RMSPropOptimizer(learning_rate, 0.99, 0.0, 1e-6)
         # Get list of variables given by scope
         local_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope)
         # Calcuate gradients
