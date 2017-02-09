@@ -172,13 +172,10 @@ def copy_vars(sess, from_scope, to_scope):
 
     return run_op
 
-
-def egreedy_policy(q_value, epsilon_list):
+def egreedy_policy(q_value, epsilon):
     '''
     Returns actions probabilities based on an epsilon greedy policy
     '''
-    # Sample an epsilon value to be used
-    epsilon = np.random.choice(epsilon_list, p=[0.4, 0.3, 0.3])
     # Sample an action
     num_actions = len(np.squeeze(q_value))
     actions = (np.ones(num_actions) * epsilon) / num_actions
@@ -186,7 +183,8 @@ def egreedy_policy(q_value, epsilon_list):
     actions[best_action] += 1 - epsilon
     return actions
 
-def get_epsilon_op(final_epsilon, stop_exploration):
+def get_epsilon_op(final_epsilon_list, stop_exploration):
+    final_epsilon = np.random.choice(final_epsilon_list, p=[0.4, 0.3, 0.3])
     epsilon_step = -np.log(final_epsilon) / stop_exploration
 
     def get_epsilon(step):
@@ -196,4 +194,4 @@ def get_epsilon_op(final_epsilon, stop_exploration):
             return new_epsilon
         else:
             return final_epsilon
-    return get_epsilon
+    return get_epsilon, final_epsilon

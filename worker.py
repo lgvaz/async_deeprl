@@ -8,7 +8,7 @@ from atari_envs import AtariWrapper
 
 class Worker:
     def __init__(self, env_name, num_actions, num_workers, num_steps,
-                 stop_exploration, final_epsilon, discount_factor,
+                 stop_exploration, final_epsilon_list, discount_factor,
                  online_update_step, target_update_step, online_net, target_net, global_step,
                  double_learning, sess, coord, saver, summary_writer, savepath, videodir):
         self.env_name = env_name
@@ -16,7 +16,7 @@ class Worker:
         self.num_workers = num_workers
         self.num_steps = num_steps
         self.stop_exploration = stop_exploration
-        self.final_epsilon = final_epsilon
+        self.final_epsilon_list = final_epsilon_list
         self.discount_factor = discount_factor
         self.online_update_step = online_update_step
         self.target_update_step = target_update_step
@@ -58,7 +58,10 @@ class Worker:
         Creates a parallel thread that runs a gym environment
         and updates the networks
         '''
-        print('Starting worker {}...'.format(name))
+        # Creates the function that calculates epsilon based on current step
+        get_epsilon, final_epsilon = get_epsilon_op(self.final_epsilon_list, self.stop_exploration)
+
+        print('Starting worker {} with final epsilon {}'.format(name, final_epsilon))
         # Starting more than one env at once may break gym
         with self.create_env_lock:
             # Record videos of only one env
@@ -69,8 +72,7 @@ class Worker:
             # Configure the maximum number of steps
             # env.spec.tags.update({'wrapper_config.TimeLimit.max_episode_steps': 1500})
 
-        get_epsilon = get_epsilon_op(self.final_epsilon, self.stop_exploration)
-        # Repeat until coord requests a stop
+        # Repeat until maximum steps limit is reached
         while not self.coord.should_stop():
             state = env.reset()
             # Create first stacked frames
