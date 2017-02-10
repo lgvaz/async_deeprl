@@ -22,6 +22,8 @@ parser.add_argument('--target_update_step', type=int, default=40000,
                     help='Update target network every "n" steps')
 parser.add_argument('--double_learning', type=str, choices=['Y', 'N'], default='N',
                     help='Wheter to use double Q-learning or not (default=N)')
+parser.add_argument('--num_stacked_frames', type=int, default=4,
+                    help='Number of previous frames used to "indicate movement"')
 parser.add_argument('--learning_rate', type=float, default=7e-4,
                     help='Learning rate used when performing gradient descent (default=3e-4)')
 parser.add_argument('--num_workers', type=int, default=8,
@@ -104,6 +106,7 @@ with tf.Session() as sess:
         target_net=target_net,
         global_step=global_step,
         double_learning=args.double_learning,
+        num_stacked_frames=args.num_stacked_frames,
         sess=sess,
         coord=coord,
         saver=saver,

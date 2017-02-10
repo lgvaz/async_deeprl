@@ -10,7 +10,7 @@ class Worker:
     def __init__(self, env_name, num_actions, num_workers, num_steps,
                  stop_exploration, final_epsilon_list, discount_factor,
                  online_update_step, target_update_step, online_net, target_net, global_step,
-                 double_learning, sess, coord, saver, summary_writer, savepath, videodir):
+                 double_learning, num_stacked_frames, sess, coord, saver, summary_writer, savepath, videodir):
         self.env_name = env_name
         self.num_actions = num_actions
         self.num_workers = num_workers
@@ -24,7 +24,7 @@ class Worker:
         self.target_net = target_net
         self.global_step = global_step
         self.double_learning = double_learning
-        self.num_stacked_frames = 4
+        self.num_stacked_frames = num_stacked_frames
         self.sess = sess
         self.coord = coord
         self.saver = saver
