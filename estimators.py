@@ -18,8 +18,7 @@ class QNet:
             num_actions: Number of possible actions
             learning_rate: Learning rate used when performing gradient descent
             scope: The scope used by the network
-            clip_grads: Whether gradients should be clipped to a range
-                        of [-1, 1] or not
+            clip_grads: Whether gradients should be clipped to a l2-norm of 5
             create_summary: Whether the network should create summaries or not,
                             only the main network should create summaries
         '''
@@ -63,7 +62,7 @@ class QNet:
         if clip_grads == 'Y':
 #           grads_and_vars = [(tf.clip_by_value(grad, -1, 1), var)
 #                             for grad, var in grads_and_vars]
-            clipped_grads, _ = tf.clip_by_global_norm(grads, 40.)
+            clipped_grads, _ = tf.clip_by_global_norm(grads, 5.)
             grads_and_vars = list(zip(clipped_grads, local_vars))
         else:
             grads_and_vars = list(zip(grads, local_vars))

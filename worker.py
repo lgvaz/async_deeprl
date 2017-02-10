@@ -140,4 +140,4 @@ class Worker:
                     break
                 state = next_state
 
-            print('Step: {} | Reward: {} | Length {}'.format(global_step_value, ep_reward, local_step))
+            print('Thread {} | Step: {} | Reward: {} | Length {}'.format(name, global_step_value, ep_reward, local_step))
