@@ -15,17 +15,17 @@ parser = argparse.ArgumentParser(description=(
 parser.add_argument('env_name', type=str, help='Gym environment name')
 # Optional arguments
 parser.add_argument('--num_steps', type=int, default=80000000,
-                    help='Number of training steps')
+                    help='Number of training steps (default=80M)')
 parser.add_argument('--stop_exploration', type=int, default=4000000,
-                    help='Steps before epsilon reaches minimum')
+                    help='Steps before epsilon reaches minimum (default=4M)')
 parser.add_argument('--target_update_step', type=int, default=40000,
-                    help='Update target network every "n" steps')
+                    help='Update target network every "n" steps (default=40000)')
 parser.add_argument('--double_learning', type=str, choices=['Y', 'N'], default='N',
                     help='Wheter to use double Q-learning or not (default=N)')
 parser.add_argument('--num_stacked_frames', type=int, default=4,
-                    help='Number of previous frames used to "indicate movement"')
+                    help='Number of previous frames used to "indicate movement" (default=4)')
 parser.add_argument('--learning_rate', type=float, default=7e-4,
-                    help='Learning rate used when performing gradient descent (default=3e-4)')
+                    help='Learning rate used when performing gradient descent (default=7e-4)')
 parser.add_argument('--num_workers', type=int, default=8,
                     help='Number of parallel threads (default=8)')
 parser.add_argument('--online_update_step', type=int, default=5,
@@ -33,7 +33,7 @@ parser.add_argument('--online_update_step', type=int, default=5,
 parser.add_argument('--clip_grads', type=str, choices=['Y', 'N'], default='Y',
                     help='Whether the grads should be clipped or not (default=Y)')
 parser.add_argument('--discount_factor', type=float, default=0.99,
-                    help='How much the agent should look into the future (default=0.99)')
+                    help='How much to bootstrap from next state (default=0.99)')
 parser.add_argument('--final_epsilon_list', type=list, default=[0.1, 0.01, 0.5],
                     help='List of minimum exploration rates (default=[0.1, 0.01, 0.5])')
 args = parser.parse_args()
