@@ -9,11 +9,13 @@ class QNet:
     Neural network for approximating Q values
     '''
 
-    def __init__(self, num_actions, learning_rate, scope, clip_grads, create_summary=False):
+    def __init__(self, env_name, experiment_name, num_actions, learning_rate, scope, clip_grads, create_summary=False):
         '''
         Creates the network
 
         Args:
+            env_name: Name of the gym environment (Used on tensorflow summary)
+            experiment_name: Name of current experiment (Used on tensorflow summary)
             num_features: Number of possible observations of environment
             num_actions: Number of possible actions
             learning_rate: Learning rate used when performing gradient descent
@@ -22,6 +24,8 @@ class QNet:
             create_summary: Whether the network should create summaries or not,
                             only the main network should create summaries
         '''
+        self.env_name = env_name
+        self.experiment_name = experiment_name
         # Placeholders
         self.states = tf.placeholder(name='states',
                                      shape=[None, 84, 84, 4],
@@ -70,10 +74,10 @@ class QNet:
 
         if create_summary:
             # Add summaries
-            tf.summary.scalar('loss', self.loss)
-            tf.summary.scalar('max_q', tf.reduce_max(self.outputs))
-            tf.summary.scalar('average_q', tf.reduce_mean(self.outputs))
-            tf.summary.histogram('q_values', self.outputs)
+            tf.summary.scalar('/'.join([self.env_name, self.experiment_name, 'loss']), self.loss)
+            tf.summary.scalar('/'.join([self.env_name, self.experiment_name, 'max_q']), tf.reduce_max(self.outputs))
+            tf.summary.scalar('/'.join([self.env_name, self.experiment_name, 'average_q']), tf.reduce_mean(self.outputs))
+            tf.summary.histogram('/'.join([self.env_name, self.experiment_name, 'q_values']), self.outputs)
 
     def predict(self, sess, states):
         '''
@@ -127,8 +131,8 @@ class QNet:
                                      shape=(),
                                      dtype=tf.int32)
         # Create some summaries
-        tf.summary.scalar('reward', episode_reward)
-        tf.summary.scalar('episode_length', episode_length)
+        tf.summary.scalar('/'.join([self.env_name, self.experiment_name, 'reward']), episode_reward)
+        tf.summary.scalar('/'.join([self.env_name, self.experiment_name, 'episode_length']), episode_length)
         # Merge all summaries
         merged = tf.summary.merge_all()
 

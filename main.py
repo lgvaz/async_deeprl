@@ -66,9 +66,9 @@ num_actions = len(env.valid_actions)
 env.close()
 
 # Create the shared networks
-online_net = QNet(num_actions, args.learning_rate,
+online_net = QNet(args.env_name, exp_name, num_actions, args.learning_rate,
                   scope='online', clip_grads=args.clip_grads, create_summary=True)
-target_net = QNet(num_actions, args.learning_rate,
+target_net = QNet(args.env_name, exp_name, num_actions, args.learning_rate,
                   scope='target', clip_grads=args.clip_grads)
 # Create shared global step
 global_step = tf.Variable(name='global_step', initial_value=0, trainable=False, dtype=tf.int32)
