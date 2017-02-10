@@ -91,6 +91,7 @@ class Worker:
                 action = np.random.choice(np.arange(self.num_actions), p=action_probs)
                 # Do the action
                 next_state, reward, done, _ = env.step(action)
+                reward = np.clip(reward, -1, 1)
                 # Build frames history
                 ep_reward += reward
 
