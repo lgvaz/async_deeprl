@@ -36,11 +36,12 @@ class Worker:
         self.target_update()
         # Shared global step
         self.increment_global_step = tf.assign(self.global_step, self.global_step + 1)
-        self.rewards = []
+        self.ep_rewards = []
+        self.ep_lengths = []
         # Creates locks
         self.global_step_lock = Lock()
         self.create_env_lock = Lock()
-        self.reward_lock = Lock()
+        self.stats_lock = Lock()
 
     def run(self):
         # Create workers
@@ -124,12 +125,14 @@ class Worker:
 
                 # Write logs and checkpoint
                 if global_step_value % 10000 == 0:
-                    with self.reward_lock:
-                        average_reward = np.mean(self.rewards)
-                        self.rewards = []
-                    print('Average reward: {}'.format(average_reward))
+                    with self.stats_lock:
+                        average_reward = np.mean(self.ep_rewards)
+                        average_length = np.mean(self.ep_lengths)
+                        self.ep_rewards = []
+                        self.ep_lengths = []
+                    print('Average reward: {} | Average length: {}'.format(average_reward, average_length))
                     print('Writing summary...')
-                    self.summary_writer(states, actions, targets, average_reward, local_step, global_step_value)
+                    self.summary_writer(states, actions, targets, average_reward, average_length, global_step_value)
                     print('Saving model...')
                     self.saver.save(self.sess, self.savepath)
                     print('Done!')
@@ -144,6 +147,7 @@ class Worker:
                     break
                 state = next_state
 
-            with self.reward_lock:
-                self.rewards.append(ep_reward)
+            with self.stats_lock:
+                self.ep_rewards.append(ep_reward)
+                self.ep_lengths.append(local_step)
             print('Thread {} | Step: {} | Reward: {} | Length {}'.format(name, global_step_value, ep_reward, local_step))
