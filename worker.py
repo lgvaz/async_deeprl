@@ -36,7 +36,7 @@ class Worker:
         self.target_update()
         # Shared global step
         self.increment_global_step = tf.assign(self.global_step, self.global_step + 1)
-        self.global_reward = 0
+        self.rewards = []
         # Creates locks
         self.global_step_lock = Lock()
         self.create_env_lock = Lock()
@@ -93,8 +93,6 @@ class Worker:
                 reward = np.clip(reward, -1, 1)
                 # Build frames history
                 ep_reward += reward
-                with self.reward_lock:
-                    self.global_reward += reward
 
                 # Calculate simple Q learning max action value
                 if self.double_learning == 'N':
@@ -125,10 +123,10 @@ class Worker:
                     self.target_update()
 
                 # Write logs and checkpoint
-                if global_step_value % 50000 == 0:
+                if global_step_value % 10000 == 0:
                     with self.reward_lock:
-                        average_reward = self.global_reward / 50000
-                        self.global_reward = 0
+                        average_reward = np.mean(self.rewards)
+                        self.rewards = []
                     print('Average reward: {}'.format(average_reward))
                     print('Writing summary...')
                     self.summary_writer(states, actions, targets, average_reward, local_step, global_step_value)
@@ -146,4 +144,6 @@ class Worker:
                     break
                 state = next_state
 
+            with self.reward_lock:
+                self.rewards.append(ep_reward)
             print('Thread {} | Step: {} | Reward: {} | Length {}'.format(name, global_step_value, ep_reward, local_step))
