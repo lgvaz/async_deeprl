@@ -9,7 +9,7 @@ class QNet:
     Neural network for approximating Q values
     '''
 
-    def __init__(self, env_name, experiment_name, num_actions, learning_rate, scope, clip_grads, create_summary=False):
+    def __init__(self, env_name, experiment_name, num_actions, learning_rate, scope, clip_norm, create_summary=False):
         '''
         Creates the network
 
@@ -20,7 +20,8 @@ class QNet:
             num_actions: Number of possible actions
             learning_rate: Learning rate used when performing gradient descent
             scope: The scope used by the network
-            clip_grads: Whether gradients should be clipped to a l2-norm of 5
+            clip_norm: The value used to clip the gradients by a l2-norm,
+                       if 0, gradients will not be clipped
             create_summary: Whether the network should create summaries or not,
                             only the main network should create summaries
         '''
@@ -63,10 +64,10 @@ class QNet:
         # Calcuate gradients
 #        grads_and_vars  = opt.compute_gradients(self.loss, local_vars)
         grads = tf.gradients(self.loss, local_vars)
-        if clip_grads == 'Y':
+        if clip_norm > 0:
 #           grads_and_vars = [(tf.clip_by_value(grad, -1, 1), var)
 #                             for grad, var in grads_and_vars]
-            clipped_grads, _ = tf.clip_by_global_norm(grads, 5.)
+            clipped_grads, _ = tf.clip_by_global_norm(grads, clip_norm)
             grads_and_vars = list(zip(clipped_grads, local_vars))
         else:
             grads_and_vars = list(zip(grads, local_vars))

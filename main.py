@@ -30,8 +30,9 @@ parser.add_argument('--num_workers', type=int, default=8,
                     help='Number of parallel threads (default=8)')
 parser.add_argument('--online_update_step', type=int, default=5,
                     help='Number of steps taken before updating online network (default=5)')
-parser.add_argument('--clip_grads', type=str, choices=['Y', 'N'], default='Y',
-                    help='Whether the grads should be clipped or not (default=Y)')
+parser.add_argument('--clip_norm', type=float, default=40.,
+                    help='The value used to clip the gradients by a l2-norm,'
+                         'if 0, gradients will not be clipped')
 parser.add_argument('--discount_factor', type=float, default=0.99,
                     help='How much to bootstrap from next state (default=0.99)')
 parser.add_argument('--final_epsilon_list', type=list, default=[0.1, 0.01, 0.5],
@@ -69,9 +70,9 @@ env.close()
 
 # Create the shared networks
 online_net = QNet(args.env_name, exp_name, num_actions, args.learning_rate,
-                  scope='online', clip_grads=args.clip_grads, create_summary=True)
+                  scope='online', clip_norm=args.clip_norm, create_summary=True)
 target_net = QNet(args.env_name, exp_name, num_actions, args.learning_rate,
-                  scope='target', clip_grads=args.clip_grads)
+                  scope='target', clip_norm=args.clip_norm, create_summary=False)
 # Create shared global step
 global_step = tf.Variable(name='global_step', initial_value=0, trainable=False, dtype=tf.int32)
 
