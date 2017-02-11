@@ -35,13 +35,12 @@ class Worker:
         self.target_update = copy_vars(sess=sess, from_scope='online', to_scope='target')
         self.target_update()
         # Shared global step
-        #self.global_step = slim.get_or_create_global_step()
         self.increment_global_step = tf.assign(self.global_step, self.global_step + 1)
+        self.global_reward = 0
         # Creates locks
         self.global_step_lock = Lock()
         self.create_env_lock = Lock()
-        self.render_lock = Lock()
-        self.summary_lock = Lock()
+        self.reward_lock = Lock()
 
     def run(self):
         # Create workers
@@ -94,6 +93,8 @@ class Worker:
                 reward = np.clip(reward, -1, 1)
                 # Build frames history
                 ep_reward += reward
+                with self.reward_lock:
+                    self.global_reward += reward
 
                 # Calculate simple Q learning max action value
                 if self.double_learning == 'N':
@@ -124,9 +125,13 @@ class Worker:
                     self.target_update()
 
                 # Write logs and checkpoint
-                if global_step_value % 10000 == 0:
+                if global_step_value % 50000 == 0:
+                    with self.reward_lock():
+                        average_reward = self.global_reward / 50000
+                        self.global_reward = 0
+                    print('Average reward: {}'.format(average_reward))
                     print('Writing summary...')
-                    self.summary_writer(states, actions, targets, ep_reward, local_step, global_step_value)
+                    self.summary_writer(states, actions, targets, average_reward, local_step, global_step_value)
                     print('Saving model...')
                     self.saver.save(self.sess, self.savepath)
                     print('Done!')
