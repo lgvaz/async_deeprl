@@ -126,7 +126,7 @@ class Worker:
 
                 # Write logs and checkpoint
                 if global_step_value % 50000 == 0:
-                    with self.reward_lock():
+                    with self.reward_lock:
                         average_reward = self.global_reward / 50000
                         self.global_reward = 0
                     print('Average reward: {}'.format(average_reward))
