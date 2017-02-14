@@ -11,8 +11,10 @@ To start training with default hyperparameters, run:
 For Double Q-learning, run:  
 `python main.py <env_name> --double_learning=Y`
 
+### Loading
 After running you will be prompted to give a name for the current experiment. A folder called _experiments_ will be created, where checkpoints, logs and videos will be stored. If that name already exists, training will start from last checkpoint.  
 
+### Options
 For a list of hyperparameters that can be specified, run:  
 `python main.py -h`
 
