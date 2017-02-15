@@ -64,11 +64,7 @@ class Worker:
         print('Starting worker {} with final epsilon {}'.format(name, final_epsilon))
         # Starting more than one env at once may break gym
         with self.create_env_lock:
-            # Record videos of only one env
-            if name == 0:
-                env = AtariWrapper(self.env_name, self.videodir)
-            else:
-                env = AtariWrapper(self.env_name)
+            env = AtariWrapper(self.env_name)
 
         # Repeat until maximum steps limit is reached
         while not self.coord.should_stop():
@@ -77,8 +73,6 @@ class Worker:
             experience = []
             ep_reward = 0
             for local_step in itertools.count():
-                # with self.render_lock:
-                #     env.render()
                 # Increment global step
                 with self.global_step_lock:
                     self.sess.run(self.increment_global_step)
@@ -91,9 +85,9 @@ class Worker:
                 action = np.random.choice(np.arange(self.num_actions), p=action_probs)
                 # Do the action
                 next_state, reward, done, _ = env.step(action)
+                ep_reward += reward
                 reward = np.clip(reward, -1, 1)
                 # Build frames history
-                ep_reward += reward
 
                 # Calculate simple Q learning max action value
                 if self.double_learning == 'N':
@@ -124,15 +118,20 @@ class Worker:
                     self.target_update()
 
                 # Write logs and checkpoint
-                if global_step_value % 10000 == 0:
+                if global_step_value % 200000 == 0:
                     with self.stats_lock:
                         average_reward = np.mean(self.ep_rewards)
                         average_length = np.mean(self.ep_lengths)
                         self.ep_rewards = []
                         self.ep_lengths = []
+                    # Run evaluation
+                    print('Running evaluation...')
+                    evaluation_reward, evaluation_length = self._run_evaluation()
                     print('Average reward: {} | Average length: {}'.format(average_reward, average_length))
+                    print('Evaluation reward: {} | Evaluation length: {}'.format(evaluation_reward, evaluation_length))
                     print('Writing summary...')
-                    self.summary_writer(states, actions, targets, average_reward, average_length, global_step_value)
+                    self.summary_writer(states, actions, targets, average_reward, average_length,
+                                        evaluation_reward, evaluation_length, global_step_value)
                     print('Saving model...')
                     self.saver.save(self.sess, self.savepath)
                     print('Done!')
@@ -151,3 +150,24 @@ class Worker:
                 self.ep_rewards.append(ep_reward)
                 self.ep_lengths.append(local_step)
             print('Thread {} | Step: {} | Reward: {} | Length {}'.format(name, global_step_value, ep_reward, local_step))
+
+    def _run_evaluation(self):
+        # Create env with monitor
+        env = AtariWrapper(self.env_name, self.videodir)
+        state = env.reset()
+        ep_reward = 0
+        # Repeat until episode finish
+        for i_step in itertools.count():
+            # Choose an action
+            action_values = self.online_net.predict(self.sess, state[np.newaxis])
+            action = np.argmax(action_values)
+            # Execute action
+            next_state, reward, done, _ = env.step(action)
+            ep_reward += reward
+            # Update state
+            if done:
+                break
+            state = next_state
+        env.close()
+
+        return ep_reward, i_step

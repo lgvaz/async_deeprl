@@ -1,5 +1,5 @@
 import gym
-from gym import wrappers
+from gym.wrappers import Monitor
 import numpy as np
 from skimage.transform import resize
 from skimage.color import rgb2gray
@@ -17,7 +17,7 @@ class AtariWrapper:
     def __init__(self, env_name, videodir=None):
         self.env = gym.make(env_name)
         if videodir is not None:
-            self.env = wrappers.Monitor(env=self.env, directory=videodir, resume=True)
+            self.env = Monitor(env=self.env, directory=videodir, resume=True)
         # Do workaround for pong and breakout actions
         if env_name == 'Pong-v0' or env_name == 'Breakout-v0':
             print('Changing pong or breakout actions to [1, 2, 3]')

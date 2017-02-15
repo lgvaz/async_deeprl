@@ -122,28 +122,39 @@ class QNet:
         writer = tf.summary.FileWriter(logdir, sess.graph)
 
         # Create placeholders to track some statistics
-        episode_reward = tf.placeholder(name='episode_reward',
-                                        shape=(),
-                                        dtype=tf.float32)
-        episode_length = tf.placeholder(name='episode_length',
-                                        shape=(),
-                                        dtype=tf.float32)
+        avg_reward = tf.placeholder(name='average_reward',
+                                    shape=(),
+                                    dtype=tf.float32)
+        avg_length = tf.placeholder(name='average_length',
+                                    shape=(),
+                                    dtype=tf.float32)
+        eval_reward = tf.placeholder(name='evaluation_reward',
+                                     shape=(),
+                                     dtype=tf.float32)
+        eval_length = tf.placeholder(name='evaluation_length',
+                                     shape=(),
+                                     dtype=tf.float32)
         episode_global_step = tf.placeholder(name='global_step',
                                      shape=(),
                                      dtype=tf.int32)
         # Create some summaries
-        tf.summary.scalar('/'.join([self.env_name, self.experiment_name, 'reward']), episode_reward)
-        tf.summary.scalar('/'.join([self.env_name, self.experiment_name, 'episode_length']), episode_length)
+        tf.summary.scalar('/'.join([self.env_name, self.experiment_name, 'average_reward']), avg_reward)
+        tf.summary.scalar('/'.join([self.env_name, self.experiment_name, 'average_length']), avg_length)
+        tf.summary.scalar('/'.join([self.env_name, self.experiment_name, 'evaluation_reward']), eval_reward)
+        tf.summary.scalar('/'.join([self.env_name, self.experiment_name, 'evaluation_length']), eval_length)
         # Merge all summaries
         merged = tf.summary.merge_all()
 
-        def summary_writer(states, actions, targets, reward, length, global_step):
+        def summary_writer(states, actions, targets, average_reward, average_length,
+                           evaluation_reward, evaluation_length, global_step):
             feed_dict = {
                 self.states: states,
                 self.actions: actions,
                 self.targets: targets,
-                episode_reward: reward,
-                episode_length: length,
+                avg_reward: average_reward,
+                avg_length: average_length,
+                eval_reward: evaluation_reward,
+                eval_length: evaluation_length,
                 episode_global_step: global_step
             }
             summary, step = sess.run([merged, episode_global_step],

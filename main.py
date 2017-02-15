@@ -22,6 +22,7 @@ parser.add_argument('--target_update_step', type=int, default=40000,
                     help='Update target network every "n" steps (default=40000)')
 parser.add_argument('--double_learning', type=str, choices=['Y', 'N'], default='N',
                     help='Wheter to use double Q-learning or not (default=N)')
+# TODO: Not yet implemented
 parser.add_argument('--num_stacked_frames', type=int, default=4,
                     help='Number of previous frames used to "indicate movement" (default=4)')
 parser.add_argument('--learning_rate', type=float, default=7e-4,
@@ -32,7 +33,7 @@ parser.add_argument('--online_update_step', type=int, default=5,
                     help='Number of steps taken before updating online network (default=5)')
 parser.add_argument('--clip_norm', type=float, default=40.,
                     help='The value used to clip the gradients by a l2-norm,'
-                         'if 0, gradients will not be clipped')
+                         'if 0, gradients will not be clipped (default=40.)')
 parser.add_argument('--discount_factor', type=float, default=0.99,
                     help='How much to bootstrap from next state (default=0.99)')
 parser.add_argument('--final_epsilon_list', type=list, default=[0.1, 0.01, 0.5],
