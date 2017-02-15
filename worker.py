@@ -69,7 +69,6 @@ class Worker:
         # Repeat until maximum steps limit is reached
         while not self.coord.should_stop():
             state = env.reset()
-            # Create first stacked frames
             experience = []
             ep_reward = 0
             for local_step in itertools.count():
@@ -100,7 +99,11 @@ class Worker:
                     next_action_values_target = self.online_net.predict(self.sess, next_state[np.newaxis])
                     next_max_action_value = np.squeeze(next_action_values_target)[next_action]
                 # Calculate TD target
-                td_target = reward + (1 - done) * self.discount_factor * next_max_action_value
+                if not done:
+                    td_target = reward + self.discount_factor * next_max_action_value
+                else:
+                    td_target = reward
+#                td_target = reward + (1 - done) * self.discount_factor * next_max_action_value
                 # Store experience
                 experience.append((state, action, td_target))
 

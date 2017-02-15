@@ -9,7 +9,8 @@ class QNet:
     Neural network for approximating Q values
     '''
 
-    def __init__(self, env_name, experiment_name, num_actions, learning_rate, scope, clip_norm, create_summary=False):
+    def __init__(self, env_name, experiment_name, num_actions, optimizer_name,
+                 learning_rate, scope, clip_norm, create_summary=False):
         '''
         Creates the network
 
@@ -18,6 +19,7 @@ class QNet:
             experiment_name: Name of current experiment (Used on tensorflow summary)
             num_features: Number of possible observations of environment
             num_actions: Number of possible actions
+            optimizer_name: The name of the optimizer to be used
             learning_rate: Learning rate used when performing gradient descent
             scope: The scope used by the network
             clip_norm: The value used to clip the gradients by a l2-norm,
@@ -57,8 +59,12 @@ class QNet:
         actions_value = tf.gather(tf.reshape(self.outputs, [-1]), actions_ids)
         # Calculate mean squared error
         self.loss = tf.reduce_mean(tf.squared_difference(self.targets, actions_value))
-        opt = tf.train.AdamOptimizer(learning_rate)
-#        opt = tf.train.RMSPropOptimizer(learning_rate, 0.99, 0.0, 1e-6)
+        if optimizer_name == 'rms':
+            opt = tf.train.RMSPropOptimizer(learning_rate, 0.99, 0.0, 1e-6)
+        elif optimizer_name == 'adam':
+            opt = tf.train.AdamOptimizer(learning_rate)
+        else:
+            raise ValueError('{} optmizer is not supported'.format(optimizer_name))
         # Get list of variables given by scope
         local_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope)
         # Calcuate gradients

@@ -25,6 +25,8 @@ parser.add_argument('--double_learning', type=str, choices=['Y', 'N'], default='
 # TODO: Not yet implemented
 parser.add_argument('--num_stacked_frames', type=int, default=4,
                     help='Number of previous frames used to "indicate movement" (default=4)')
+parser.add_argument('--optimizer', type=str, choices=['rms', 'adam'], default='rms',
+                    help='Which optimizer to use (default=rms)')
 parser.add_argument('--learning_rate', type=float, default=7e-4,
                     help='Learning rate used when performing gradient descent (default=7e-4)')
 parser.add_argument('--num_workers', type=int, default=8,
@@ -70,9 +72,9 @@ num_actions = len(env.valid_actions)
 env.close()
 
 # Create the shared networks
-online_net = QNet(args.env_name, exp_name, num_actions, args.learning_rate,
+online_net = QNet(args.env_name, exp_name, num_actions, args.optimizer, args.learning_rate,
                   scope='online', clip_norm=args.clip_norm, create_summary=True)
-target_net = QNet(args.env_name, exp_name, num_actions, args.learning_rate,
+target_net = QNet(args.env_name, exp_name, num_actions, args.optimizer, args.learning_rate,
                   scope='target', clip_norm=args.clip_norm, create_summary=False)
 # Create shared global step
 global_step = tf.Variable(name='global_step', initial_value=0, trainable=False, dtype=tf.int32)
