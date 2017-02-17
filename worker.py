@@ -3,8 +3,8 @@ import itertools
 import numpy as np
 import tensorflow as tf
 from threading import Thread, Lock
-from estimators import *
 from atari_envs import AtariWrapper
+from utils import copy_vars, egreedy_policy, get_epsilon_op
 
 class Worker:
     def __init__(self, env_name, num_actions, num_workers, num_steps,

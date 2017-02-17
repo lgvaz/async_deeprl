@@ -1,8 +1,9 @@
+import os
 import argparse
 import numpy as np
 import tensorflow as tf
 from worker import Worker
-from estimators import *
+from estimators import QNet
 from atari_envs import AtariWrapper
 
 
