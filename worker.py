@@ -153,7 +153,7 @@ class Worker:
 
     def _run_evaluation(self):
         # Create env with monitor
-        env = AtariWrapper(self.env_name, self.videodir)
+        env = AtariWrapper(self.env_name, self.num_stacked_frames, self.videodir)
         state = env.reset()
         ep_reward = 0
         # Repeat until episode finish
