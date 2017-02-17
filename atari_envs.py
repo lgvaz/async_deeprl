@@ -14,8 +14,9 @@ class AtariWrapper:
     '''
     Wraps atari gym env, the new env returns the last N frames.
     '''
-    def __init__(self, env_name, videodir=None):
+    def __init__(self, env_name, num_stacked_frames, videodir=None):
         self.env = gym.make(env_name)
+        self.num_stacked_frames = num_stacked_frames
         if videodir is not None:
             self.env = Monitor(env=self.env, directory=videodir, resume=True)
         # Do workaround for pong and breakout actions
@@ -32,7 +33,7 @@ class AtariWrapper:
         '''
         state = self.env.reset()
         state = preprocess(state)
-        self.states_hist = np.stack([state] * 4, axis=2)
+        self.states_hist = np.stack([state] * self.num_stacked_frames, axis=2)
         return self.states_hist
 
     def step(self, action):

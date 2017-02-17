@@ -64,7 +64,7 @@ class Worker:
         print('Starting worker {} with final epsilon {}'.format(name, final_epsilon))
         # Starting more than one env at once may break gym
         with self.create_env_lock:
-            env = AtariWrapper(self.env_name)
+            env = AtariWrapper(self.env_name, self.num_stacked_frames)
 
         # Repeat until maximum steps limit is reached
         while not self.coord.should_stop():
