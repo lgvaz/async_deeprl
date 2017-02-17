@@ -24,7 +24,7 @@ class AtariWrapper:
             print('Changing pong or breakout actions to [1, 2, 3]')
             self.valid_actions = [1, 2, 3]
         else:
-            num_actions = env.action_space.n
+            num_actions = self.env.action_space.n
             self.valid_actions = np.arange(num_actions)
 
     def reset(self):
