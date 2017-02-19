@@ -120,6 +120,11 @@ class Worker:
                     print('Updating target network...')
                     self.target_update()
 
+                # Reroll epsilon
+                if global_step_value % 1000000 == 0:
+                    get_epsilon, final_epsilon = get_epsilon_op(self.final_epsilon_list, self.stop_exploration)
+                    print('Final epsilon for worker {} changed to {}'.format(name, final_epsilon))
+
                 # Write logs and checkpoint
                 if global_step_value % 200000 == 0:
                     with self.stats_lock:
