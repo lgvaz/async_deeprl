@@ -136,10 +136,10 @@ class Worker:
                     # Run evaluation
                     print('Running evaluation...')
                     evaluation_reward, evaluation_length = self._run_evaluation()
-                    print('[Average reward: {}]'.format(average_reward), end='')
-                    print('[Average length: {}]'.format(average_length))
+                    print('[Average reward: {:.1f}]'.format(average_reward), end='')
+                    print('[Average length: {:.1f}]'.format(average_length))
                     print('[Evaluation reward: {}]'.format(evaluation_reward), end='')
-                    print('[Evaluation length: {}]'.format(evaluation_reward))
+                    print('[Evaluation length: {}]'.format(evaluation_length))
                     print('Writing summary...')
                     self.summary_writer(states, actions, targets, average_reward, average_length,
                                         evaluation_reward, evaluation_length, global_step_value)
