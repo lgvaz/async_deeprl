@@ -89,22 +89,9 @@ class Worker:
                 reward = np.clip(reward, -1, 1)
                 # Build frames history
 
-                # Calculate simple Q learning max action value
-                if self.double_learning == 'N':
-                    next_action_values = self.target_net.predict(self.sess, next_state[np.newaxis])
-                    next_max_action_value = np.max(next_action_values)
-                # Calculate double Q learning max action value
-                if self.double_learning == 'Y':
-                    next_action_values = self.online_net.predict(self.sess, next_state[np.newaxis])
-                    next_action = np.argmax(next_action_values)
-                    next_action_values_target = self.online_net.predict(self.sess, next_state[np.newaxis])
-                    next_max_action_value = np.squeeze(next_action_values_target)[next_action]
-                # Calculate TD target
-                if not done:
-                    td_target = reward + self.discount_factor * next_max_action_value
-                else:
-                    td_target = reward
-#                td_target = reward + (1 - done) * self.discount_factor * next_max_action_value
+                # Calculate temporal-diference target
+                td_target = self.calculate_td_target(next_state, reward, done)
+
                 # Store experience
                 experience.append((state, action, td_target))
 
@@ -148,6 +135,25 @@ class Worker:
             print('[Reward: {}]'.format(ep_reward), end='')
             print('[Length: {}]'.format(local_step))
 
+    def calculate_td_target(self, next_state, reward, done):
+        # Calculate simple Q learning max action value
+        if self.double_learning == 'N':
+            next_action_values = self.target_net.predict(self.sess, next_state[np.newaxis])
+            next_max_action_value = np.max(next_action_values)
+        # Calculate double Q learning max action value
+        if self.double_learning == 'Y':
+            next_action_values = self.online_net.predict(self.sess, next_state[np.newaxis])
+            next_action = np.argmax(next_action_values)
+            next_action_values_target = self.online_net.predict(self.sess, next_state[np.newaxis])
+            next_max_action_value = np.squeeze(next_action_values_target)[next_action]
+        # Calculate TD target
+        if not done:
+            td_target = reward + self.discount_factor * next_max_action_value
+        else:
+            td_target = reward
+#                td_target = reward + (1 - done) * self.discount_factor * next_max_action_value
+        return td_target
+
     def _write_logs(self, global_step):
         with self.stats_lock:
             average_reward = np.mean(self.ep_rewards)
@@ -184,21 +190,8 @@ class Worker:
             ep_reward += reward
             reward = np.clip(ep_reward, -1, 1)
 
-            # Calculate simple Q learning max action value
-            if self.double_learning == 'N':
-                next_action_values = self.target_net.predict(self.sess, next_state[np.newaxis])
-                next_max_action_value = np.max(next_action_values)
-            # Calculate double Q learning max action value
-            if self.double_learning == 'Y':
-                next_action_values = self.online_net.predict(self.sess, next_state[np.newaxis])
-                next_action = np.argmax(next_action_values)
-                next_action_values_target = self.online_net.predict(self.sess, next_state[np.newaxis])
-                next_max_action_value = np.squeeze(next_action_values_target)[next_action]
-            # Calculate TD target
-            if not done:
-                td_target = reward + self.discount_factor * next_max_action_value
-            else:
-                td_target = reward
+            # Calculate temporal-diference target
+            td_target = self.calculate_td_target(next_state, reward, done)
 
             # Save experience
             experience.append((state, action, td_target))
