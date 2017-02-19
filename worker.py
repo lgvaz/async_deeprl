@@ -127,25 +127,8 @@ class Worker:
                     print('Final epsilon for worker {} changed to {}'.format(name, final_epsilon))
 
                 # Write logs and checkpoint
-                if global_step_value % 200000 == 0:
-                    with self.stats_lock:
-                        average_reward = np.mean(self.ep_rewards)
-                        average_length = np.mean(self.ep_lengths)
-                        self.ep_rewards = []
-                        self.ep_lengths = []
-                    # Run evaluation
-                    print('Running evaluation...')
-                    evaluation_reward, evaluation_length = self._run_evaluation()
-                    print('[Average reward: {:.1f}]'.format(average_reward), end='')
-                    print('[Average length: {:.1f}]'.format(average_length))
-                    print('[Evaluation reward: {}]'.format(evaluation_reward), end='')
-                    print('[Evaluation length: {}]'.format(evaluation_length))
-                    print('Writing summary...')
-                    self.summary_writer(states, actions, targets, average_reward, average_length,
-                                        evaluation_reward, evaluation_length, global_step_value)
-                    print('Saving model...')
-                    self.saver.save(self.sess, self.savepath)
-                    print('Done!')
+                if global_step_value % 10000 == 0:
+                    self._write_logs(global_step_value)
 
                 # If the maximum step is reached, request all threads to stop
                 if global_step_value >= self.num_steps:
@@ -165,10 +148,31 @@ class Worker:
             print('[Reward: {}]'.format(ep_reward), end='')
             print('[Length: {}]'.format(local_step))
 
+    def _write_logs(self, global_step):
+        with self.stats_lock:
+            average_reward = np.mean(self.ep_rewards)
+            average_length = np.mean(self.ep_lengths)
+            self.ep_rewards = []
+            self.ep_lengths = []
+        # Run evaluation
+        print('Running evaluation...')
+        states, actions, targets, evaluation_reward, evaluation_length = self._run_evaluation()
+        print('[Average reward: {:.1f}]'.format(average_reward), end='')
+        print('[Average length: {:.1f}]'.format(average_length))
+        print('[Evaluation reward: {}]'.format(evaluation_reward), end='')
+        print('[Evaluation length: {}]'.format(evaluation_length))
+        print('Writing summary...')
+        self.summary_writer(states, actions, targets, average_reward, average_length,
+                            evaluation_reward, evaluation_length, global_step)
+        print('Saving model...')
+        self.saver.save(self.sess, self.savepath)
+        print('Done!')
+
     def _run_evaluation(self):
         # Create env with monitor
         env = AtariWrapper(self.env_name, self.num_stacked_frames, self.videodir)
         state = env.reset()
+        experience = []
         ep_reward = 0
         # Repeat until episode finish
         for i_step in itertools.count():
@@ -178,10 +182,34 @@ class Worker:
             # Execute action
             next_state, reward, done, _ = env.step(action)
             ep_reward += reward
+            reward = np.clip(ep_reward, -1, 1)
+
+            # Calculate simple Q learning max action value
+            if self.double_learning == 'N':
+                next_action_values = self.target_net.predict(self.sess, next_state[np.newaxis])
+                next_max_action_value = np.max(next_action_values)
+            # Calculate double Q learning max action value
+            if self.double_learning == 'Y':
+                next_action_values = self.online_net.predict(self.sess, next_state[np.newaxis])
+                next_action = np.argmax(next_action_values)
+                next_action_values_target = self.online_net.predict(self.sess, next_state[np.newaxis])
+                next_max_action_value = np.squeeze(next_action_values_target)[next_action]
+            # Calculate TD target
+            if not done:
+                td_target = reward + self.discount_factor * next_max_action_value
+            else:
+                td_target = reward
+
+            # Save experience
+            experience.append((state, action, td_target))
+
             # Update state
             if done:
                 break
             state = next_state
-        env.close()
 
-        return ep_reward, i_step
+        env.close()
+        # Unpack experience
+        states, actions, targets = zip(*experience)
+
+        return states, actions, targets, ep_reward, i_step
