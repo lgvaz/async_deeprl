@@ -8,7 +8,7 @@ from atari_envs import AtariWrapper
 
 class Worker:
     def __init__(self, env_name, num_actions, num_workers, num_steps,
-                 stop_exploration, final_epsilon_list, discount_factor,
+                 stop_exploration, final_epsilon_list, change_epsilon_step, discount_factor,
                  online_update_step, target_update_step, online_net, target_net, global_step,
                  double_learning, num_stacked_frames, sess, coord, saver, summary_writer, savepath, videodir):
         self.env_name = env_name
@@ -17,6 +17,7 @@ class Worker:
         self.num_steps = num_steps
         self.stop_exploration = stop_exploration
         self.final_epsilon_list = final_epsilon_list
+        self.change_epsilon_step = change_epsilon_step
         self.discount_factor = discount_factor
         self.online_update_step = online_update_step
         self.target_update_step = target_update_step
@@ -121,7 +122,7 @@ class Worker:
                     self.target_update()
 
                 # Reroll epsilon
-                if global_step_value % 1000000 == 0:
+                if global_step_value % self.change_epsilon_step == 0:
                     get_epsilon, final_epsilon = get_epsilon_op(self.final_epsilon_list, self.stop_exploration)
                     print('Final epsilon for worker {} changed to {}'.format(name, final_epsilon))
 

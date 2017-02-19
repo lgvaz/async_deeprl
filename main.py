@@ -40,6 +40,8 @@ parser.add_argument('--discount_factor', type=float, default=0.99,
                     help='How much to bootstrap from next state (default=0.99)')
 parser.add_argument('--final_epsilon_list', type=list, default=[0.1, 0.01, 0.5],
                     help='List of minimum exploration rates (default=[0.1, 0.01, 0.5])')
+parser.add_argument('--change_epsilon_step', type=int, default=1000000,
+                    help='Change epsilon for a single thread every N steps')
 args = parser.parse_args()
 
 # Ask experiment name
@@ -103,6 +105,7 @@ with tf.Session() as sess:
         num_steps=args.num_steps,
         stop_exploration=args.stop_exploration,
         final_epsilon_list=args.final_epsilon_list,
+        change_epsilon_step = args.change_epsilon_step,
         discount_factor=args.discount_factor,
         online_update_step=args.online_update_step,
         target_update_step=args.target_update_step,
