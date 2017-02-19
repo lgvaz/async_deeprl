@@ -3,8 +3,8 @@ import itertools
 import numpy as np
 import tensorflow as tf
 from threading import Thread, Lock
-from estimators import *
 from atari_envs import AtariWrapper
+from utils import copy_vars, egreedy_policy, get_epsilon_op
 
 class Worker:
     def __init__(self, env_name, num_actions, num_workers, num_steps,
@@ -65,7 +65,7 @@ class Worker:
         print('Starting worker {} with final epsilon {}'.format(name, final_epsilon))
         # Starting more than one env at once may break gym
         with self.create_env_lock:
-            env = AtariWrapper(self.env_name)
+            env = AtariWrapper(self.env_name, self.num_stacked_frames)
 
         # Repeat until maximum steps limit is reached
         while not self.coord.should_stop():
@@ -162,7 +162,7 @@ class Worker:
 
     def _run_evaluation(self):
         # Create env with monitor
-        env = AtariWrapper(self.env_name, self.videodir)
+        env = AtariWrapper(self.env_name, self.num_stacked_frames, self.videodir)
         state = env.reset()
         ep_reward = 0
         # Repeat until episode finish

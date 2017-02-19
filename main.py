@@ -1,8 +1,9 @@
+import os
 import argparse
 import numpy as np
 import tensorflow as tf
 from worker import Worker
-from estimators import *
+from estimators import QNet
 from atari_envs import AtariWrapper
 
 
@@ -22,7 +23,6 @@ parser.add_argument('--target_update_step', type=int, default=40000,
                     help='Update target network every "n" steps (default=40000)')
 parser.add_argument('--double_learning', type=str, choices=['Y', 'N'], default='N',
                     help='Wheter to use double Q-learning or not (default=N)')
-# TODO: Not yet implemented
 parser.add_argument('--num_stacked_frames', type=int, default=4,
                     help='Number of previous frames used to "indicate movement" (default=4)')
 parser.add_argument('--optimizer', type=str, choices=['rms', 'adam'], default='rms',
@@ -69,7 +69,7 @@ with open(argspath, 'w') as f:
         f.write('\n')
 
 # Get num_actions
-env = AtariWrapper(args.env_name)
+env = AtariWrapper(args.env_name, args.num_stacked_frames)
 num_actions = len(env.valid_actions)
 env.close()
 
