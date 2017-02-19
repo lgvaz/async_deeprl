@@ -136,8 +136,10 @@ class Worker:
                     # Run evaluation
                     print('Running evaluation...')
                     evaluation_reward, evaluation_length = self._run_evaluation()
-                    print('Average reward: {} | Average length: {}'.format(average_reward, average_length))
-                    print('Evaluation reward: {} | Evaluation length: {}'.format(evaluation_reward, evaluation_length))
+                    print('[Average reward: {}]'.format(average_reward), end='')
+                    print('[Average length: {}]'.format(average_length))
+                    print('[Evaluation reward: {}]'.format(evaluation_reward), end='')
+                    print('[Evaluation length: {}]'.format(evaluation_reward))
                     print('Writing summary...')
                     self.summary_writer(states, actions, targets, average_reward, average_length,
                                         evaluation_reward, evaluation_length, global_step_value)
@@ -158,7 +160,10 @@ class Worker:
             with self.stats_lock:
                 self.ep_rewards.append(ep_reward)
                 self.ep_lengths.append(local_step)
-            print('Thread {} | Step: {} | Reward: {} | Length {}'.format(name, global_step_value, ep_reward, local_step))
+            print('[Worker: {}]'.format(name), end='')
+            print('[Step: {}]'.format(global_step_value), end='')
+            print('[Reward: {}]'.format(ep_reward), end='')
+            print('[Length: {}]'.format(local_step))
 
     def _run_evaluation(self):
         # Create env with monitor
