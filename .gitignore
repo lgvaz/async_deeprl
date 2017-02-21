@@ -1,4 +1,5 @@
 *.pyc
+*.lprof
 
 # Ignore logs, checkpoints, videos etc
 experiments/
