@@ -114,8 +114,10 @@ class Worker:
                     print('Final epsilon for worker {} changed to {}'.format(name, final_epsilon))
 
                 # Write logs and checkpoint
-                if global_step_value % 10000 == 0:
-                    self._write_logs(global_step_value)
+                if global_step_value % 200000 == 0:
+                    t = Thread(target=self._write_logs, args=(global_step_value,))
+                    t.start()
+#                    self._write_logs(global_step_value)
 
                 # If the maximum step is reached, request all threads to stop
                 if global_step_value >= self.num_steps:
