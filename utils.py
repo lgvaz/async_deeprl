@@ -1,6 +1,23 @@
 import numpy as np
 import tensorflow as tf
 
+def increment_global_step_op(sess, global_step):
+    '''
+    Returns an function that computes and increase the global step
+
+    Args:
+        sess: The current tensorflow session
+        global_step: A tensorflow variable representing the global step
+    '''
+    # Add one to the current value of global_step
+    op = tf.assign(global_step, global_step + 1)
+
+    def run_op():
+        _, step = sess.run([op, global_step])
+        return step
+
+    return run_op
+
 def copy_vars(sess, from_scope, to_scope):
     '''
     Create operations to copy variables (weights) between two graphs

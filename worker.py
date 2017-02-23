@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 from threading import Thread, Lock
 from atari_envs import AtariWrapper
-from utils import copy_vars, egreedy_policy, get_epsilon_op
+from utils import copy_vars, egreedy_policy, get_epsilon_op, increment_global_step_op
 
 class Worker:
     def __init__(self, env_name, num_actions, num_workers, num_steps,
@@ -36,7 +36,7 @@ class Worker:
         self.target_update = copy_vars(sess=sess, from_scope='online', to_scope='target')
         self.target_update()
         # Shared global step
-        self.increment_global_step = tf.assign(self.global_step, self.global_step + 1)
+        self.increment_global_step = increment_global_step_op(self.sess, self.global_step)
         self.ep_rewards = []
         self.ep_lengths = []
         # Creates locks
@@ -75,8 +75,7 @@ class Worker:
             for local_step in itertools.count():
                 # Increment global step
                 with self.global_step_lock:
-                    self.sess.run(self.increment_global_step)
-                    global_step_value = self.sess.run(self.global_step)
+                    global_step_value = self.increment_global_step()
                 # Compute action values with online net
                 action_values = self.online_net.predict(self.sess, state[np.newaxis])
                 # Compute epsilon and choose an action based on a egreedy policy
@@ -117,7 +116,6 @@ class Worker:
                 if global_step_value % 200000 == 0:
                     t = Thread(target=self._write_logs, args=(global_step_value,))
                     t.start()
-#                    self._write_logs(global_step_value)
 
                 # If the maximum step is reached, request all threads to stop
                 if global_step_value >= self.num_steps:
