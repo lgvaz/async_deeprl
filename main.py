@@ -73,13 +73,13 @@ env = AtariWrapper(args.env_name, args.num_stacked_frames)
 num_actions = len(env.valid_actions)
 env.close()
 
-# Create the shared networks
-online_net = QNet(args.env_name, exp_name, num_actions, args.optimizer, args.learning_rate,
-                  scope='online', clip_norm=args.clip_norm, create_summary=True)
-target_net = QNet(args.env_name, exp_name, num_actions, args.optimizer, args.learning_rate,
-                  scope='target', clip_norm=args.clip_norm, create_summary=False)
 # Create shared global step
 global_step = tf.Variable(name='global_step', initial_value=0, trainable=False, dtype=tf.int32)
+# Create the shared networks
+online_net = QNet(args.env_name, exp_name, num_actions, args.optimizer, args.learning_rate, global_step,
+                  scope='online', clip_norm=args.clip_norm, create_summary=True)
+target_net = QNet(args.env_name, exp_name, num_actions, args.optimizer, args.learning_rate, global_step,
+                  scope='target', clip_norm=args.clip_norm, create_summary=False)
 
 # Create tensorflow coordinator to manage when threads should stop
 coord = tf.train.Coordinator()
