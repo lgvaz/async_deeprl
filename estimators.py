@@ -9,7 +9,7 @@ class QNet:
     '''
 
     def __init__(self, env_name, experiment_name, num_actions, optimizer_name,
-                 learning_rate, scope, clip_norm, create_summary=False):
+                 learning_rate, global_step, scope, clip_norm, create_summary=False):
         '''
         Creates the network
 
@@ -20,6 +20,7 @@ class QNet:
             num_actions: Number of possible actions
             optimizer_name: The name of the optimizer to be used
             learning_rate: Learning rate used when performing gradient descent
+            global_step: A global step tensor shared by all threads
             scope: The scope used by the network
             clip_norm: The value used to clip the gradients by a l2-norm,
                        if 0, gradients will not be clipped
@@ -58,10 +59,13 @@ class QNet:
         actions_value = tf.gather(tf.reshape(self.outputs, [-1]), actions_ids)
         # Calculate mean squared error
         self.loss = tf.reduce_mean(tf.squared_difference(self.targets, actions_value))
+        # Calculate learning rate
+        self.learning_rate = tf.train.inverse_time_decay(learning_rate, global_step, 1e6, 1e-7, staircase=True)
+
         if optimizer_name == 'rms':
-            opt = tf.train.RMSPropOptimizer(learning_rate, 0.99, 0.0, 1e-6)
+            opt = tf.train.RMSPropOptimizer(self.learning_rate, 0.99, 0.0, 1e-6)
         elif optimizer_name == 'adam':
-            opt = tf.train.AdamOptimizer(learning_rate)
+            opt = tf.train.AdamOptimizer(self.learning_rate)
         else:
             raise ValueError('{} optmizer is not supported'.format(optimizer_name))
         # Get list of variables given by scope
@@ -81,6 +85,7 @@ class QNet:
         if create_summary:
             # Add summaries
             tf.summary.scalar('/'.join([self.env_name, self.experiment_name, 'loss']), self.loss)
+            tf.summary.scalar('/'.join([self.env_name, self.experiment_name, 'learning_rate']), self.learning_rate)
             tf.summary.scalar('/'.join([self.env_name, self.experiment_name, 'max_q']), tf.reduce_max(self.outputs))
             tf.summary.scalar('/'.join([self.env_name, self.experiment_name, 'average_q']), tf.reduce_mean(self.outputs))
             tf.summary.histogram('/'.join([self.env_name, self.experiment_name, 'q_values']), self.outputs)

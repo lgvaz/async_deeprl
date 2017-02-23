@@ -113,7 +113,7 @@ class Worker:
                     print('Final epsilon for worker {} changed to {}'.format(name, final_epsilon))
 
                 # Write logs and checkpoint
-                if global_step_value % 200000 == 0:
+                if global_step_value % 10000 == 0:
                     t = Thread(target=self._write_logs, args=(global_step_value,))
                     t.start()
 
