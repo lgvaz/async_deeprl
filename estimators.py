@@ -85,7 +85,12 @@ class QNet:
         if create_summary:
             # Add summaries
             tf.summary.scalar('/'.join([self.env_name, self.experiment_name, 'loss']), self.loss)
+<<<<<<< HEAD
             tf.summary.scalar('/'.join([self.env_name, self.experiment_name, 'learning_rate']), self.learning_rate)
+||||||| merged common ancestors
+=======
+            tf.summary.scalar('/'.join([self.env_name, self.experiment_name, 'learning_rate']), self.outputs)
+>>>>>>> 29a8eee961fb2f2b52fb33c2ec02f7a2be731c02
             tf.summary.scalar('/'.join([self.env_name, self.experiment_name, 'max_q']), tf.reduce_max(self.outputs))
             tf.summary.scalar('/'.join([self.env_name, self.experiment_name, 'average_q']), tf.reduce_mean(self.outputs))
             tf.summary.histogram('/'.join([self.env_name, self.experiment_name, 'q_values']), self.outputs)
