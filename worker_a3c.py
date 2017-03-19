@@ -107,7 +107,7 @@ class Worker:
 
                 # If the maximum step is reached, request all threads to stop
                 if global_step_value >= self.num_steps:
-                    # with self.global_step_lock:
+                    with self.global_step_lock:
                         self.coord.request_stop()
 
                 # Update state
@@ -130,7 +130,6 @@ class Worker:
             td_target = reward + self.discount_factor * np.squeeze(next_state_value)
         else:
             td_target = reward
-#                td_target = reward + (1 - done) * self.discount_factor * next_max_action_value
         return td_target
 
     def _write_logs(self, global_step):

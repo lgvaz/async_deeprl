@@ -54,14 +54,19 @@ class Approximator:
                                                     activation_fn=None)
 
         # Optimization process
+
         batch_size = tf.shape(self.states)[0]
         # Pick only the actions which were chosen
         # action_ids = (i_batch * NUM_ACTIONS) + action
         actions_ids = tf.range(batch_size) * num_actions + self.actions
         chosen_actions_probs = tf.gather(tf.reshape(self.action_probs, [-1]), actions_ids)
+
+        # Use entropy to encourage exploration
+        self.entropy = -tf.reduce_sum(self.action_probs * tf.log(self.action_probs), 1, name='entropy')
         # Calculate loss for policy and state-value function
         td_errors = self.td_targets - self.state_value
         self.loss = tf.reduce_sum(- tf.log(chosen_actions_probs) * td_errors
+                                  - self.entropy
                                   + tf.squared_difference(self.td_targets, self.state_value))
         # Calculate learning rate
         self.learning_rate = tf.train.inverse_time_decay(learning_rate, global_step, 1e5, 1e-2, staircase=True)
