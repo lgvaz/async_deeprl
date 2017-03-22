@@ -79,7 +79,6 @@ class Worker:
                 next_state, reward, done, _ = env.step(action)
                 ep_reward += reward
                 reward = np.clip(reward, -1, 1)
-                # Build frames history
 
                 # Calculate temporal-diference target
                 td_target = self.calculate_td_target(next_state, reward, done)
