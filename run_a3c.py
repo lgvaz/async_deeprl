@@ -31,8 +31,8 @@ parser.add_argument('--learning_rate', type=float, default=7e-4,
                     help='Learning rate used when performing gradient descent (default=7e-4)')
 parser.add_argument('--num_workers', type=int, default=8,
                     help='Number of parallel threads (default=8)')
-parser.add_argument('--online_update_step', type=int, default=5,
-                    help='Number of steps taken before updating online network (default=5)')
+parser.add_argument('--online_update_step', type=int, default=20,
+                    help='Number of steps taken before updating online network (default=20)')
 parser.add_argument('--clip_norm', type=float, default=5.,
                     help='The value used to clip the gradients by a l2-norm,'
                          'if 0, gradients will not be clipped (default=5.)')
