@@ -65,7 +65,7 @@ class Approximator:
         # Calculate loss for policy and state-value function
         td_errors = self.td_targets - self.state_value
         self.loss = tf.reduce_sum(- tf.log(chosen_actions_probs) * td_errors
-                                  - self.entropy
+                                  - 0.01 * self.entropy
                                   + tf.squared_difference(self.td_targets, self.state_value))
         # Calculate learning rate
         self.learning_rate = tf.train.inverse_time_decay(learning_rate, global_step, 1e5, 1e-2, staircase=True)
