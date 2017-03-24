@@ -53,8 +53,7 @@ class Approximator:
             self.state_value = slim.fully_connected(self.fc, 1,
                                                     activation_fn=None)
 
-        # Optimization process
-
+        ## Optimization process
         batch_size = tf.shape(self.states)[0]
         # Pick only the actions which were chosen
         # action_ids = (i_batch * NUM_ACTIONS) + action
@@ -71,6 +70,7 @@ class Approximator:
         # Calculate learning rate
         self.learning_rate = tf.train.inverse_time_decay(learning_rate, global_step, 1e5, 1e-2, staircase=True)
 
+        # Define the optimizer
         if optimizer_name == 'rms':
             opt = tf.train.RMSPropOptimizer(self.learning_rate, 0.99, 0.0, 1e-6)
         elif optimizer_name == 'adam':
@@ -129,7 +129,7 @@ class Approximator:
         Args:
             sess: Tensorflow session to be used
             states: Enviroment observations
-            actions: Actions to be updated (Probally performed actions)
+            actions: Actions to be updated (Probally the performed actions)
             targets: TD targets
         '''
         feed_dict = {self.states: states,
