@@ -1,13 +1,12 @@
 import gym
 from gym.wrappers import Monitor
 import numpy as np
-from skimage.transform import resize
-from skimage.color import rgb2gray
+from cv2 import resize, cvtColor, COLOR_RGB2GRAY
 
 
 def preprocess(img):
     ''' Converts image to grayscale and resizes to 84x84 '''
-    return resize(rgb2gray(img), (84, 84))
+    return resize(cvtColor(img, COLOR_RGB2GRAY), (84, 84))
 
 
 class AtariWrapper:
