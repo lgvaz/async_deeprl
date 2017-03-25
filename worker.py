@@ -87,19 +87,20 @@ class Worker:
                 ep_reward += reward
                 reward = np.clip(reward, -1, 1)
 
-                # Calculate temporal-diference target
-                td_target = self.calculate_td_target(next_state, reward, done)
-
                 # Store experience
-                experience.append((state, action, td_target))
+                experience.append((state, action, reward, done))
 
                 # Update online network
                 if local_step % self.online_update_step == 0 or done:
                     # Unpack experience
-                    states, actions, targets = zip(*experience)
+                    states, actions, rewards, dones = zip(*experience)
+                    # Calculate the n-step returns
+                    returns = self.calculate_returns(rewards)
+                    # Calculate temporal-diference target
+                    td_targets = [self.calculate_td_target(s, r, d) for s, r, d in zip(itertools.repeat(next_state), returns, dones)]
                     experience = []
                     # Updating using Hogwild! (without locks)
-                    self.online_net.update(self.sess, states, actions, targets)
+                    self.online_net.update(self.sess, states, actions, td_targets)
 
                 # Update target network
                 if global_step_value % self.target_update_step == 0:
@@ -133,6 +134,16 @@ class Worker:
             print('[Step: {}]'.format(global_step_value), end='')
             print('[Reward: {}]'.format(ep_reward), end='')
             print('[Length: {}]'.format(local_step))
+
+    def calculate_returns(self, rewards):
+        returns = []
+        return_sum = 0
+        # Start at last reward
+        for r in rewards[::-1]:
+            return_sum += r
+            returns.insert(0, return_sum)
+
+        return returns
 
     def calculate_td_target(self, next_state, reward, done):
         # Calculate simple Q learning max action value
