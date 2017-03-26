@@ -68,7 +68,8 @@ class Approximator:
                                   - 0.01 * self.entropy
                                   + tf.squared_difference(self.td_targets, self.state_value))
         # Calculate learning rate
-        self.learning_rate = tf.train.inverse_time_decay(learning_rate, global_step, 1e5, 1e-2, staircase=True)
+#        self.learning_rate = tf.train.inverse_time_decay(learning_rate, global_step, 1e5, 1e-2, staircase=True)
+        self.learning_rate = tf.train.exponential_decay(learning_rate, global_step, 8e7, 0.2, staircase=True)
 
         # Define the optimizer
         if optimizer_name == 'rms':

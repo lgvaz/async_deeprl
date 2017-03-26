@@ -88,16 +88,16 @@ class Worker:
                 reward = np.clip(reward, -1, 1)
 
                 # Store experience
-                experience.append((state, action, reward, done))
+                experience.append((state, action, reward))
 
                 # Update online network
                 if local_step % self.online_update_step == 0 or done:
                     # Unpack experience
-                    states, actions, rewards, dones = zip(*experience)
+                    states, actions, rewards = zip(*experience)
                     # Calculate the n-step returns
                     returns = self.calculate_returns(rewards)
                     # Calculate temporal-diference target
-                    td_targets = [self.calculate_td_target(s, r, d) for s, r, d in zip(itertools.repeat(next_state), returns, dones)]
+                    td_targets = [self.calculate_td_target(s, r, d) for s, r, d in zip(itertools.repeat(next_state), returns, itertools.repeat(done))]
                     experience = []
                     # Updating using Hogwild! (without locks)
                     self.online_net.update(self.sess, states, actions, td_targets)

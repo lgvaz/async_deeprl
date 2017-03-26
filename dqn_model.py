@@ -60,7 +60,8 @@ class QNet:
         # Calculate mean squared error
         self.loss = tf.reduce_mean(tf.squared_difference(self.targets, actions_value))
         # Calculate learning rate
-        self.learning_rate = tf.train.inverse_time_decay(learning_rate, global_step, 1e5, 1e-2, staircase=True)
+#        self.learning_rate = tf.train.inverse_time_decay(learning_rate, global_step, 1e5, 1e-2, staircase=True)
+        self.learning_rate = tf.train.exponential_decay(learning_rate, global_step, 8e7, 0.2, staircase=True)
 
         if optimizer_name == 'rms':
             opt = tf.train.RMSPropOptimizer(self.learning_rate, 0.99, 0.0, 1e-6)
