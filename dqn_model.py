@@ -9,7 +9,7 @@ class QNet:
     '''
 
     def __init__(self, env_name, experiment_name, num_actions, optimizer_name,
-                 learning_rate, global_step, scope, clip_norm, create_summary=False):
+                 initial_learning_rate, global_step, scope, clip_norm, create_summary=False):
         '''
         Creates the network
 
@@ -19,7 +19,7 @@ class QNet:
             num_features: Number of possible observations of environment
             num_actions: Number of possible actions
             optimizer_name: The name of the optimizer to be used
-            learning_rate: Learning rate used when performing gradient descent
+            initial_learning_rate: Learning rate used when performing gradient descent
             global_step: A global step tensor shared by all threads
             scope: The scope used by the network
             clip_norm: The value used to clip the gradients by a l2-norm,
@@ -61,7 +61,11 @@ class QNet:
         self.loss = tf.reduce_mean(tf.squared_difference(self.targets, actions_value))
         # Calculate learning rate
 #        self.learning_rate = tf.train.inverse_time_decay(learning_rate, global_step, 1e5, 1e-2, staircase=True)
-        self.learning_rate = tf.train.exponential_decay(learning_rate, global_step, 8e7, 0.2, staircase=True)
+        self.learning_rate = tf.train.exponential_decay(learning_rate=initial_learning_rate,
+                                                        global_step=global_step,
+                                                        decay_steps=8e7,
+                                                        decay_rate=0.2,
+                                                        staircase=False)
 
         if optimizer_name == 'rms':
             opt = tf.train.RMSPropOptimizer(self.learning_rate, 0.99, 0.0, 1e-6)
