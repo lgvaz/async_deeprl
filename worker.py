@@ -94,10 +94,8 @@ class Worker:
                 if local_step % self.online_update_step == 0 or done:
                     # Unpack experience
                     states, actions, rewards = zip(*experience)
-                    # Calculate the n-step returns
-                    returns = self.calculate_returns(rewards)
-                    # Calculate temporal-diference target
-                    td_targets = [self.calculate_td_target(s, r, d) for s, r, d in zip(itertools.repeat(next_state), returns, itertools.repeat(done))]
+                    # Calculate temporal-diference targets
+                    td_targets = self.calculate_td_targets(rewards, next_state, done)
                     experience = []
                     # Updating using Hogwild! (without locks)
                     self.online_net.update(self.sess, states, actions, td_targets)
@@ -135,34 +133,32 @@ class Worker:
             print('[Reward: {}]'.format(ep_reward), end='')
             print('[Length: {}]'.format(local_step))
 
-    def calculate_returns(self, rewards):
-        returns = []
-        return_sum = 0
-        # Start at last reward
-        for r in rewards[::-1]:
-            return_sum += r
-            returns.insert(0, return_sum)
-
-        return returns
-
-    def calculate_td_target(self, next_state, reward, done):
-        # Calculate simple Q learning max action value
-        if self.double_learning == 'N':
-            next_action_values = self.target_net.predict(self.sess, next_state[np.newaxis])
-            next_max_action_value = np.max(next_action_values)
-        # Calculate double Q learning max action value
-        if self.double_learning == 'Y':
-            next_action_values = self.online_net.predict(self.sess, next_state[np.newaxis])
-            next_action = np.argmax(next_action_values)
-            next_action_values_target = self.online_net.predict(self.sess, next_state[np.newaxis])
-            next_max_action_value = np.squeeze(next_action_values_target)[next_action]
-        # Calculate TD target
+    def calculate_td_targets(self, rewards, next_state, done):
         if not done:
-            td_target = reward + self.discount_factor * next_max_action_value
+            # Bootstrap from final_state
+            # Calculate simple Q learning max action value
+            if self.double_learning == 'N':
+                next_action_values = self.target_net.predict(self.sess, next_state[np.newaxis])
+                next_max_action_value = np.max(next_action_values)
+            # Calculate double Q learning max action value
+            if self.double_learning == 'Y':
+                next_action_values = self.online_net.predict(self.sess, next_state[np.newaxis])
+                next_action = np.argmax(next_action_values)
+                next_action_values_target = self.online_net.predict(self.sess, next_state[np.newaxis])
+                next_max_action_value = np.squeeze(next_action_values_target)[next_action]
+
+            # Start calculating TD targets from the end
+            return_sum = rewards[-1] + self.discount_factor * next_max_action_value
         else:
-            td_target = reward
-#                td_target = reward + (1 - done) * self.discount_factor * next_max_action_value
-        return td_target
+            return_sum = rewards[-1]
+
+        td_targets = [return_sum]
+        # Iterate backwards on the list (once again, it's easier to start from the end)
+        for r in rewards[-2::-1]:
+            return_sum = r + self.discount_factor * return_sum
+            td_targets.insert(0, return_sum)
+
+        return td_targets
 
     def _write_logs(self, global_step):
         with self.stats_lock:
