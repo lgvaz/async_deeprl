@@ -196,11 +196,8 @@ class Worker:
             ep_reward += reward
             reward = np.clip(ep_reward, -1, 1)
 
-            # Calculate temporal-diference target
-            td_target = self.calculate_td_target(next_state, reward, done)
-
             # Save experience
-            experience.append((state, action, td_target))
+            experience.append((state, action, reward))
 
             # Update state
             if done:
@@ -209,6 +206,9 @@ class Worker:
 
         env.close()
         # Unpack experience
-        states, actions, targets = zip(*experience)
+        states, actions, rewards = zip(*experience)
+        # Calculate temporal-diference target
+        td_targets = self.calculate_td_targets(rewards, next_state, done)
 
-        return states, actions, targets, ep_reward, i_step
+
+        return states, actions, td_targets, ep_reward, i_step
