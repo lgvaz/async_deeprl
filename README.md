@@ -4,6 +4,8 @@ Work in progress...
 
 Tensorflow implementation of the asynchronous Q-learning (and Double Q-learning) method described in Deep Mind's paper "Asynchronous Methods for Deep Reinforcement Learning".
 
+![Async Q-Learning results](images/summary_demo.png?raw=True "Async Q-Learning results")
+
 ## Usage
 ### Training
 To start training with default hyperparameters, run:  
