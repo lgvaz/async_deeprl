@@ -1,5 +1,5 @@
 # Asynchronous Q-learning 
-
+Work in progress...
 ## About
 
 Tensorflow implementation of the asynchronous Q-learning (and Double Q-learning) method described in Deep Mind's paper "Asynchronous Methods for Deep Reinforcement Learning".
